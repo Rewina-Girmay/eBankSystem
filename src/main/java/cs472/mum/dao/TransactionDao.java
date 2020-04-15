@@ -7,9 +7,12 @@ import java.time.LocalDate;
 import java.util.*;
 
 public class TransactionDao {
-    private HashMap<Integer, Transaction> transDb = new HashMap<>();
+    private HashMap<Integer, Transaction>  transDb;
     private Transaction transaction;
 
+    public TransactionDao() {
+        transDb = new HashMap<>();
+    }
     public void createTransaction(int transactionId, String accountNumber, double transactionAmount) {
         transaction = new Transaction(transactionId, accountNumber, transactionAmount);
         transDb.put(transactionId,transaction);

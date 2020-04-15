@@ -3,13 +3,14 @@ package cs472.mum.controller;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
+import cs472.mum.dao.AccountDao;
+import cs472.mum.model.Account;
 import cs472.mum.model.User;
+import cs472.mum.service.AccountDaoService;
 import cs472.mum.service.UserService;
 
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
+import javax.servlet.ServletException;
+import javax.servlet.http.*;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -17,11 +18,13 @@ import java.io.PrintWriter;
 public class UserController extends HttpServlet {
 
     private UserService service;
+    private AccountDaoService accountDaoService;
     private Gson gson;
 
     public void init() {
         gson = new Gson();
         service = new UserService();
+        accountDaoService = new AccountDaoService();
     }
 
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws javax.servlet.ServletException, IOException {
@@ -39,10 +42,9 @@ public class UserController extends HttpServlet {
             User user = gson.fromJson(payload, User.class);
 
             if (service.addUser(user)) {
-                HttpSession session = request.getSession();
                 sendAsJson(response, user);
             } else {
-                String error = "{message: user already excist}";
+                String error = "{message: user already exists}";
                 gson.toJson(error);
                 sendAsJson(response, error);
             }
@@ -56,8 +58,10 @@ public class UserController extends HttpServlet {
             System.out.println(username + " " + password);
             String accountNumber = service.validateUser(username, password);
             if (accountNumber != null) {
-                HttpSession session = request.getSession();
-                sendAsJson(response, accountNumber);
+                Account account = accountDaoService.getAccount(accountNumber);
+                request.getSession().setAttribute("account", account);
+//                HttpSession session = request.getSession();
+                sendAsJson(response, account.getAccountNumber());
             } else {
                 String error = "{error username or password}";
                 gson.toJson(error);
@@ -99,4 +103,18 @@ public class UserController extends HttpServlet {
         response.addHeader("Access-Control-Max-Age", "86400");
         response.setContentType("application/json");
     }
+
+    @Override
+    protected void doOptions(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        super.doOptions(req, resp);
+        setAccessControlHeaders(resp);
+    }
+
+    private void setAccessControlHeaders(HttpServletResponse response) {
+        response.setHeader("Access-Control-Allow-Origin", "*");
+//        response.setHeader("Access-Control-Allow-Origin", "http://localhost:5500");
+        response.setHeader("Access-Control-Allow-Methods", "*");
+        response.setHeader("Access-Control-Allow-Headers", "*");
+    }
+
 }

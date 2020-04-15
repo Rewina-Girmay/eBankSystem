@@ -86,11 +86,33 @@ public class TransactionServlet extends HttpServlet {
 
 
     private void sendAsJson(HttpServletResponse response, Object obj) throws IOException {
-            response.setContentType("application/json");
+
+            fixHeaders(response);
             String res = gson.toJson(obj);
             PrintWriter out = response.getWriter();
             System.out.println(res);
             out.print(res);
             out.flush();
         }
+
+    private void fixHeaders(HttpServletResponse response) {
+        response.addHeader("Access-Control-Allow-Origin", "*");
+        response.addHeader("Access-Control-Allow-Methods", "*");
+        response.addHeader("Access-Control-Allow-Headers", "*");
+        response.addHeader("Access-Control-Max-Age", "86400");
+        response.setContentType("application/json");
+    }
+
+    @Override
+    protected void doOptions(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        super.doOptions(req, resp);
+        setAccessControlHeaders(resp);
+    }
+
+    private void setAccessControlHeaders(HttpServletResponse response) {
+        response.setHeader("Access-Control-Allow-Origin", "*");
+//        response.setHeader("Access-Control-Allow-Origin", "http://localhost:5500");
+        response.setHeader("Access-Control-Allow-Methods", "*");
+        response.setHeader("Access-Control-Allow-Headers", "*");
+    }
     }

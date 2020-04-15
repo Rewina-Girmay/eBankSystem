@@ -15,7 +15,7 @@ public class UserDao {
     private HashMap<String, User> repo = new HashMap<>();
 
     public UserDao(){
-        repo.put("rewi",new User("rewi","12435","rewi"));
+        repo.put("rewi",new User("rewi","12345","rewi"));
         repo.put("lili",new User("lili","67890","lili"));
     }
     //get account number for rendering page

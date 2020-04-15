@@ -82,14 +82,23 @@ public class AccountServlet  extends HttpServlet {
         }
 
         else if (path[1].equals("pay") && path.length == 2) {
-            JsonObject jobj = gson.fromJson(payload, JsonObject.class);
-            String payer = jobj.get("payer").getAsString();
-            String reciver = jobj.get("rcv").getAsString();
-            double amount = jobj.get("amount").getAsDouble();
-            System.out.println(payer + " " + reciver);
-           String confirmation =  accountDaoService.payMoney(payer, reciver, amount);
 
-            sendAsJson(resp, confirmation);
+            if (req.getSession(false) !=null) {
+                JsonObject jobj = gson.fromJson(payload, JsonObject.class);
+//                String payer = jobj.get("payer").getAsString();
+
+                String reciver = jobj.get("rcv").getAsString();
+                double amount = jobj.get("amount").getAsDouble();
+                Account account = (Account) req.getSession().getAttribute("account");
+                String confirmation =  accountDaoService.payMoney(account.getAccountNumber(), reciver, amount);
+
+                sendAsJson(resp, confirmation);
+            }
+            else {
+                String message =  "{error : you must login first }";
+                sendAsJson(resp, message);
+            }
+
 
         }
         else {
@@ -117,14 +126,14 @@ public class AccountServlet  extends HttpServlet {
         out.flush();
     }
 
-    // Send Json Directly
-    private  void sendJson(HttpServletResponse response, JsonObject jsonObject) throws IOException{
-        fixHeaders(response);
-        PrintWriter out = response.getWriter();
-
-        out.print(jsonObject);
-        out.flush();
-    }
+//    // Send Json Directly
+//    private  void sendJson(HttpServletResponse response, JsonObject jsonObject) throws IOException{
+//        fixHeaders(response);
+//        PrintWriter out = response.getWriter();
+//
+//        out.print(jsonObject);
+//        out.flush();
+//    }
 
 
     private void fixHeaders(HttpServletResponse response) {
@@ -134,5 +143,18 @@ public class AccountServlet  extends HttpServlet {
         response.addHeader("Access-Control-Allow-Headers", "*");
         response.addHeader("Access-Control-Max-Age", "86400");
         response.setContentType("application/json");
+    }
+
+    @Override
+    protected void doOptions(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        super.doOptions(req, resp);
+        setAccessControlHeaders(resp);
+    }
+
+    private void setAccessControlHeaders(HttpServletResponse response) {
+        response.setHeader("Access-Control-Allow-Origin", "*");
+//        response.setHeader("Access-Control-Allow-Origin", "http://localhost:5500");
+        response.setHeader("Access-Control-Allow-Methods", "*");
+        response.setHeader("Access-Control-Allow-Headers", "*");
     }
 }

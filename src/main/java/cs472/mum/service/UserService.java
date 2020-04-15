@@ -9,9 +9,12 @@ import java.util.List;
 public class UserService {
 
     private UserDao userDao;
+    private AccountDaoService accountDaoService;
 
     public UserService(){
+
         userDao = new UserDao();
+        accountDaoService = new AccountDaoService();
     }
 
     //getting the account number
@@ -21,7 +24,7 @@ public class UserService {
 
     //add user and password
     public boolean addUser(User user){
-        if(!userDao.getUsers().containsKey(user.getUserName())){
+        if(!userDao.getUsers().containsKey(user.getUserName()) && accountDaoService.getAccount(user.getAccountNumber()) != null){
             userDao.addUser(user);
             return true;
         }
