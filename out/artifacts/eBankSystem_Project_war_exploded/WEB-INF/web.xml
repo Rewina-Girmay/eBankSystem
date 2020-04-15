@@ -19,4 +19,15 @@
         <servlet-name>TransactionServlet</servlet-name>
         <url-pattern>/transaction/*</url-pattern>
     </servlet-mapping>
+
+    <servlet>
+        <servlet-name>AccountName</servlet-name>
+        <servlet-class>cs472.mum.controller.AccountServlet</servlet-class>
+    </servlet>
+
+    <servlet-mapping>
+        <servlet-name>AccountName</servlet-name>
+        <url-pattern>/accounts/*</url-pattern>
+    </servlet-mapping>
+
 </web-app>
