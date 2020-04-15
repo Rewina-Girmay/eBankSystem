@@ -1,4 +1,6 @@
-/bin
-/out
+bin/**
+out/**
 .class
 .idea
+target/**
+.war
