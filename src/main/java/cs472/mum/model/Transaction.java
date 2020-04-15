@@ -4,20 +4,23 @@ import java.time.LocalDate;
 
 public class Transaction {
     private int transactionId;
-    private Account account;
+    private String accountNumber;
     private LocalDate date;
     private double transactionAmount;
 
-    public Transaction(){
-
+    public Transaction(int transactionId, String accountNumber, double transactionAmount ){
+        this.transactionId= transactionId;
+        this.accountNumber= accountNumber;
+        this.date= LocalDate.now();
+        this.transactionAmount= transactionAmount;
     }
 
     public void setTransactionId(int transactionId) {
         this.transactionId = transactionId;
     }
 
-    public void setAccount(Account account) {
-        this.account = account;
+    public void setAccount(String accountNumber) {
+        this.accountNumber = accountNumber;
     }
 
     public void setDate(LocalDate date) {
@@ -32,8 +35,8 @@ public class Transaction {
         return transactionId;
     }
 
-    public Account getAccount() {
-        return account;
+    public String getAccountNumber() {
+        return accountNumber;
     }
 
     public LocalDate getDate() {
@@ -48,7 +51,7 @@ public class Transaction {
     public String toString() {
         return "Transaction{" +
                 "transactionId=" + transactionId +
-                ", account=" + account +
+                ", account=" + accountNumber +
                 ", date=" + date +
                 ", transactionAmount=" + transactionAmount +
                 '}';

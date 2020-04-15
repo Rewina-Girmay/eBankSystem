@@ -11,4 +11,12 @@
         <servlet-name>userServlet</servlet-name>
         <url-pattern>/user/*</url-pattern>
     </servlet-mapping>
+    <servlet>
+        <servlet-name>TransactionServlet</servlet-name>
+        <servlet-class>cs472.mum.controller.TransactionServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>TransactionServlet</servlet-name>
+        <url-pattern>/transaction/*</url-pattern>
+    </servlet-mapping>
 </web-app>
