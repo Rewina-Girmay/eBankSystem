@@ -13,9 +13,9 @@ public class TransactionDao {
     public TransactionDao() {
         transDb = new HashMap<>();
     }
-    public void createTransaction(int transactionId, String accountNumber, double transactionAmount) {
-        transaction = new Transaction(transactionId, accountNumber, transactionAmount);
-        transDb.put(transactionId,transaction);
+    public Transaction createTransaction( int transactionId, String accountNumber, double transactionAmount) {
+        transaction = new Transaction(transactionId,accountNumber, transactionAmount);
+        return transaction;
     }
 
     public void deleteTransaction(int transactionId) {
@@ -30,6 +30,9 @@ public class TransactionDao {
 
     public HashMap<Integer, Transaction> readAllTransaction() {
         return transDb;
+    }
+    public void addTransaction(int transactionID, Transaction transaction){
+        transDb.put(transactionID, transaction);
     }
 
 }

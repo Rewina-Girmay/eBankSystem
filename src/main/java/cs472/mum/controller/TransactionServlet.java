@@ -27,9 +27,9 @@ public class TransactionServlet extends HttpServlet {
         super.init();
         gson = new Gson();
         transactionService = new TransactionService();
-        transactionService.createTransaction(1, "acc1", 2.0);
-        transactionService.createTransaction(12, "acc1", 3.0);
-        transactionService.createTransaction(1234, "acc3", 23.0);
+        transactionService.createTransaction(01, "1234567", 2.0);
+        transactionService.createTransaction(02, "1234567", 3.0);
+        transactionService.createTransaction(03, "12345676", 23.0);
     }
 
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
@@ -57,12 +57,12 @@ public class TransactionServlet extends HttpServlet {
 
         if (splits.length == 2) {
             String modelId = splits[1];
-            if (transactionService.readAllTransaction(modelId) == null) {
+            if (transactionService.readAllTransaction("1234567") == null) {
                 response.sendError(HttpServletResponse.SC_NOT_FOUND);
                 return;
             }
             Collection<Transaction> models = new ArrayList<>();
-            models.addAll(transactionService.readAllTransaction(modelId));
+            models.addAll(transactionService.readAllTransaction("1234567"));
             sendAsJson(response, models);
 //            sendAsJson(response, transactionService.readAllTransaction(modelId));
             return;
@@ -117,4 +117,3 @@ public class TransactionServlet extends HttpServlet {
         fixHeaders(resp);
     }
 }
-

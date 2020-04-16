@@ -40,38 +40,39 @@ public class UserController extends HttpServlet {
         if (pathInfo == null || pathInfo.equals("/")) {
 
             User user = gson.fromJson(payload, User.class);
-
+            boolean create = false;
             if (service.addUser(user)) {
-                sendAsJson(response, user);
+                create = true;
+                sendAsJson(response, create);
+
+                return;
             } else {
                 String error = "{message: user already exists}";
                 gson.toJson(error);
+
                 sendAsJson(response, error);
+                return;
             }
         }
 
 
         if (path[1].equals("login") && path.length == 2) {
-            System.out.println("payload" + payload);
             JsonObject jobj = gson.fromJson(payload, JsonObject.class);
             String username = jobj.get("userName").getAsString();
             String password = jobj.get("password").getAsString();
-        System.out.println(username + " " + password);
+            System.out.println(username + " " + password);
             String accountNumber = service.validateUser(username, password);
+            Boolean valid = false;
             if (accountNumber != null) {
                 Account account = accountDaoService.getAccount(accountNumber);
-
-                HttpSession session = request.getSession();
-                session.setAttribute("account", account);
-                Cookie cookie = new Cookie("login", "yes");
-                response.addCookie(cookie);
-                System.out.println("account Info: " + account.toString());
-                sendAsJson(response, account.getAccountNumber());
+                request.getSession().setAttribute("account", account);
+                valid = true;
+                sendAsJson(response, valid);
                 return;
             } else {
-                String error = "{error username or password}";
-                gson.toJson(error);
-                sendAsJson(response, error);
+//                String error = "{error username or password}";
+//                gson.toJson(error);
+                sendAsJson(response, valid);
                 return;
             }
 
@@ -96,8 +97,8 @@ public class UserController extends HttpServlet {
     }
 
     private void sendAsJson(HttpServletResponse response, Object obj) throws IOException {
-
         fixHeaders(response);
+        response.setContentType("application/json");
         String res = gson.toJson(obj);
         PrintWriter out = response.getWriter();
         out.print(res);
@@ -109,6 +110,7 @@ public class UserController extends HttpServlet {
         response.addHeader("Access-Control-Allow-Methods", "*");
         response.addHeader("Access-Control-Allow-Headers", "*");
         response.addHeader("Access-Control-Max-Age", "86400");
+        response.setContentType("application/json");
     }
 
     @Override

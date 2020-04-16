@@ -2,8 +2,10 @@ package cs472.mum.controller;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
+import cs472.mum.dao.TransactionDao;
 import cs472.mum.model.Account;
 import cs472.mum.service.AccountDaoService;
+import cs472.mum.service.TransactionService;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -18,11 +20,13 @@ import java.util.Collection;
 public class AccountServlet  extends HttpServlet {
 
     private AccountDaoService accountDaoService;
+    private TransactionService transactionService;
     private Gson gson = null;
 
     public void init() {
         gson = new Gson();
         accountDaoService = new AccountDaoService();
+        transactionService = new TransactionService();
     }
 
     @Override
@@ -54,7 +58,7 @@ public class AccountServlet  extends HttpServlet {
             return;
         }
 
-        sendAsJson(resp, accountDaoService.getAccounts().get(accNo));
+        sendAsJson(resp, accountDaoService.getAccounts().get(accNo).getBalance());
         return;
 
 
@@ -64,7 +68,7 @@ public class AccountServlet  extends HttpServlet {
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
 
         String pathInfo = req.getPathInfo();
-        String [] path = pathInfo.split("/");
+        String[] path = pathInfo.split("/");
 
         StringBuffer buffer = new StringBuffer();
         BufferedReader reader = req.getReader();
@@ -75,21 +79,18 @@ public class AccountServlet  extends HttpServlet {
 
         String payload = buffer.toString();
 
-        if(pathInfo == null || pathInfo.equals("/")){
+        if (pathInfo == null || pathInfo.equals("/")) {
 
-            Account  account = gson.fromJson(payload, Account.class);
-            if( accountDaoService.createAccount(account)){
+            Account account = gson.fromJson(payload, Account.class);
+            if (accountDaoService.createAccount(account)) {
                 sendAsJson(resp, account);
                 return;
-            }
-            else {
-                String result =  "{'error': 'account already exist'}";
+            } else {
+                String result = "{'error': 'account already exist'}";
                 sendAsJson(resp, result);
                 return;
             }
-        }
-
-        else if(path[1].equals("depost") && path.length == 2) {
+        } else if (path[1].equals("depost") && path.length == 2) {
             JsonObject jsonObject = gson.fromJson(payload, JsonObject.class);
             String accno = jsonObject.get("accno").getAsString();
             double amount = jsonObject.get("amount").getAsDouble();
@@ -98,48 +99,48 @@ public class AccountServlet  extends HttpServlet {
                 account.setBalance(account.getBalance() + amount);
                 accountDaoService.updateAccount(account);
                 String result = "{'Balance': " + account.getBalance() + "}";
+//                transactionService.createTransaction(accno, amount);
                 sendAsJson(resp, result);
-            }
-            else {
+                return;
+            } else {
                 String result = "{'error': 'The Account Number isn't valid'}";
                 sendAsJson(resp, result);
+                return;
             }
 
 
-        }
+        } else if (path[1].equals("getBalance") && path.length == 2) {
 
-        else if(path[1].equals("getBalance") && path.length == 2) {
-
-        }
-
-        else if (path[1].equals("pay") && path.length == 2) {
+        } else if (path[1].equals("pay") && path.length == 2) {
 
             HttpSession session = req.getSession(false);
-            if (session != null) {
-                JsonObject jobj = gson.fromJson(payload, JsonObject.class);
+//            if (session != null) {
+            JsonObject jobj = gson.fromJson(payload, JsonObject.class);
 //                String payer = jobj.get("payer").getAsString();
 
-                String reciver = jobj.get("rcv").getAsString() ;
-                double amount = jobj.get("amount").getAsDouble();
-                Account account = (Account) req.getSession().getAttribute("account");
-                String confirmation =  accountDaoService.payMoney(account.getAccountNumber(), reciver, amount);
-
-                sendAsJson(resp, confirmation);
-                return;
-            }
-            else {
-                String message =  "{error : you must login first }";
-                sendAsJson(resp, message);
-                return;
-            }
-
-
+            String reciver = jobj.get("rcv").getAsString();
+            double amount = jobj.get("amount").getAsDouble();
+//            Account account = (Account) req.getSession().getAttribute("account");
+            String confirmation = accountDaoService.payMoney("12345", reciver, amount);
+//                transactionService.createTransaction(account, +(amount))//
+//                transactionService.createTransaction(reciver, -(amount))
+            sendAsJson(resp, confirmation);
+            return;
         }
+//            else {
+//                String message =  "{error: you must login first }";
+//                sendAsJson(resp, message);
+//                return;
+//            }
+
+
         else {
             resp.sendError(HttpServletResponse.SC_BAD_REQUEST);
             return;
         }
+
     }
+
 
     @Override
     protected void doPut(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {

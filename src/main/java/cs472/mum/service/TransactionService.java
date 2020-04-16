@@ -18,16 +18,17 @@ public class TransactionService {
         transactionDao= new TransactionDao();
     }
     //creates transaction and adds it to memory
-    public boolean createTransaction(int transactionId, String accountNumber, double transactionAmount) {
-        if(!transactionDao.readAllTransaction().containsKey(transactionId)) {
-            transactionDao.createTransaction(transactionId,accountNumber,transactionAmount);
+    public boolean createTransaction( int transactionId, String accountNumber, double transactionAmount) {
+        if(!transactionDao.readAllTransaction().containsKey(accountNumber)) {
+            Transaction transaction=transactionDao.createTransaction(transactionId,accountNumber,transactionAmount);
+            transactionDao.addTransaction(transaction.getTransactionId(),transaction);
             return true;
         }
         else
             return false;
     }
 
-//Deletes transaction from Memory
+    //Deletes transaction from Memory
     /*
     public boolean deleteTransaction(int transactionId) {
         if (transactionDao.readAllTransaction().containsKey(transactionId)) {
@@ -63,6 +64,7 @@ public class TransactionService {
         } else
             return null;
     }
+
 
     //returns transaction based on date
     public List<Transaction> transactionsFromDate(String date, String accountNumber){
