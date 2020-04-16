@@ -9,6 +9,7 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -65,7 +66,7 @@ public class AccountServlet  extends HttpServlet {
         String pathInfo = req.getPathInfo();
         String [] path = pathInfo.split("/");
 
-        StringBuilder buffer = new StringBuilder();
+        StringBuffer buffer = new StringBuffer();
         BufferedReader reader = req.getReader();
         String line;
         while ((line = reader.readLine()) != null) {
@@ -76,27 +77,60 @@ public class AccountServlet  extends HttpServlet {
 
         if(pathInfo == null || pathInfo.equals("/")){
 
-            Account account = gson.fromJson(payload, Account.class);
-            accountDaoService.createAccount(account);
-            sendAsJson(resp, account);
+            Account  account = gson.fromJson(payload, Account.class);
+            if( accountDaoService.createAccount(account)){
+                sendAsJson(resp, account);
+                return;
+            }
+            else {
+                String result =  "{'error': 'account already exist'}";
+                sendAsJson(resp, result);
+                return;
+            }
+        }
+
+        else if(path[1].equals("depost") && path.length == 2) {
+            JsonObject jsonObject = gson.fromJson(payload, JsonObject.class);
+            String accno = jsonObject.get("accno").getAsString();
+            double amount = jsonObject.get("amount").getAsDouble();
+            Account account = accountDaoService.getAccount(accno);
+            if (account != null) {
+                account.setBalance(account.getBalance() + amount);
+                accountDaoService.updateAccount(account);
+                String result = "{'Balance': " + account.getBalance() + "}";
+                sendAsJson(resp, result);
+            }
+            else {
+                String result = "{'error': 'The Account Number isn't valid'}";
+                sendAsJson(resp, result);
+            }
+
+
+        }
+
+        else if(path[1].equals("getBalance") && path.length == 2) {
+
         }
 
         else if (path[1].equals("pay") && path.length == 2) {
 
-            if (req.getSession(false) !=null) {
+            HttpSession session = req.getSession(false);
+            if (session != null) {
                 JsonObject jobj = gson.fromJson(payload, JsonObject.class);
 //                String payer = jobj.get("payer").getAsString();
 
-                String reciver = jobj.get("rcv").getAsString();
+                String reciver = jobj.get("rcv").getAsString() ;
                 double amount = jobj.get("amount").getAsDouble();
                 Account account = (Account) req.getSession().getAttribute("account");
                 String confirmation =  accountDaoService.payMoney(account.getAccountNumber(), reciver, amount);
 
                 sendAsJson(resp, confirmation);
+                return;
             }
             else {
                 String message =  "{error : you must login first }";
                 sendAsJson(resp, message);
+                return;
             }
 
 
@@ -148,13 +182,7 @@ public class AccountServlet  extends HttpServlet {
     @Override
     protected void doOptions(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         super.doOptions(req, resp);
-        setAccessControlHeaders(resp);
+        fixHeaders(resp);
     }
 
-    private void setAccessControlHeaders(HttpServletResponse response) {
-        response.setHeader("Access-Control-Allow-Origin", "*");
-//        response.setHeader("Access-Control-Allow-Origin", "http://localhost:5500");
-        response.setHeader("Access-Control-Allow-Methods", "*");
-        response.setHeader("Access-Control-Allow-Headers", "*");
-    }
 }

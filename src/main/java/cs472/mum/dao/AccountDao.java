@@ -55,7 +55,19 @@ public class AccountDao implements Serializable {
 
     // Create account
     public boolean createAccount(Account account) {
+        if (accounts.containsKey(account.getAccountNumber())) {
+            return false;
+        }
+        else {
+            accounts.put(account.getAccountNumber(), account);
+            return true;
+        }
 
+    }
+
+    // update Account
+
+    public boolean updateAccount(Account account) {
         accounts.put(account.getAccountNumber(), account);
         return true;
     }

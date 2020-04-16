@@ -1,7 +1,8 @@
 package cs472.mum.controller;
 
 import com.google.gson.Gson;
-import cs472.mum.model.Account;
+//import com.sun.javafx.binding.StringFormatter;
+//import cs472.mum.model.Account;
 import cs472.mum.model.Transaction;
 import cs472.mum.service.TransactionService;
 
@@ -12,27 +13,28 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 
 @WebServlet(name = "cs472.mum.controller.TransactionServlet")
 public class TransactionServlet extends HttpServlet {
     private Gson gson = null;
-    private TransactionService transactionService=null;
+    private TransactionService transactionService = null;
 
     @Override
     public void init() throws ServletException {
         super.init();
-        gson= new Gson();
-        transactionService= new TransactionService();
-        transactionService.createTransaction(1,"acc1", 2.0);
-        transactionService.createTransaction(12,"acc1", 3.0);
-        transactionService.createTransaction(1234,"acc3", 23.0);
+        gson = new Gson();
+        transactionService = new TransactionService();
+        transactionService.createTransaction(1, "acc1", 2.0);
+        transactionService.createTransaction(12, "acc1", 3.0);
+        transactionService.createTransaction(1234, "acc3", 23.0);
     }
 
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 //        String pathInfo = request.getPathInfo();
-        doGet(request,response);
+        doGet(request, response);
 
     }
 
@@ -40,7 +42,8 @@ public class TransactionServlet extends HttpServlet {
         String pathInfo = request.getPathInfo();
         //displays all transactions in the entire
         if (pathInfo == null || pathInfo.equals("/")) {
-            HashMap<Integer, Transaction> models = transactionService.getAllTransactions();
+            Collection<Transaction> models = transactionService.getAllTransactions().values();
+//            Collection< Transaction> trans=(Collection<Transaction>)transactionService.getAllTransactions();
             sendAsJson(response, models);
             return;
         }
@@ -52,31 +55,36 @@ public class TransactionServlet extends HttpServlet {
 //            return;
 //        }
 
-        if(splits.length == 2) {
+        if (splits.length == 2) {
             String modelId = splits[1];
             if (transactionService.readAllTransaction(modelId) == null) {
                 response.sendError(HttpServletResponse.SC_NOT_FOUND);
                 return;
             }
-            sendAsJson(response, transactionService.readAllTransaction(modelId));
+            Collection<Transaction> models = new ArrayList<>();
+            models.addAll(transactionService.readAllTransaction(modelId));
+            sendAsJson(response, models);
+//            sendAsJson(response, transactionService.readAllTransaction(modelId));
             return;
         }
 
         //All transactions made on that day
-        if(splits.length==4){
+        if (splits.length == 4) {
 
             String modelId = splits[1];
-            String date= splits[3];
+            String date = splits[3];
             if (transactionService.readAllTransaction(modelId) == null) {
                 response.sendError(HttpServletResponse.SC_NOT_FOUND);
                 return;
             }
-            if(transactionService.transactionsFromDate(date,modelId)==null)
-            {
+            if (transactionService.transactionsFromDate(date, modelId) == null) {
                 response.sendError(HttpServletResponse.SC_NOT_FOUND);
                 return;
             }
-            sendAsJson(response, transactionService.transactionsFromDate(date,modelId));
+            Collection<Transaction> models = new ArrayList<>();
+            models.addAll(transactionService.transactionsFromDate(date, modelId));
+            sendAsJson(response, models);
+//            sendAsJson(response, transactionService.transactionsFromDate(date,modelId));
             return;
         }
 
@@ -87,13 +95,13 @@ public class TransactionServlet extends HttpServlet {
 
     private void sendAsJson(HttpServletResponse response, Object obj) throws IOException {
 
-            fixHeaders(response);
-            String res = gson.toJson(obj);
-            PrintWriter out = response.getWriter();
-            System.out.println(res);
-            out.print(res);
-            out.flush();
-        }
+        fixHeaders(response);
+        String res = gson.toJson(obj);
+        PrintWriter out = response.getWriter();
+        System.out.println(res);
+        out.print(res);
+        out.flush();
+    }
 
     private void fixHeaders(HttpServletResponse response) {
         response.addHeader("Access-Control-Allow-Origin", "*");
@@ -106,13 +114,7 @@ public class TransactionServlet extends HttpServlet {
     @Override
     protected void doOptions(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         super.doOptions(req, resp);
-        setAccessControlHeaders(resp);
+        fixHeaders(resp);
     }
+}
 
-    private void setAccessControlHeaders(HttpServletResponse response) {
-        response.setHeader("Access-Control-Allow-Origin", "*");
-//        response.setHeader("Access-Control-Allow-Origin", "http://localhost:5500");
-        response.setHeader("Access-Control-Allow-Methods", "*");
-        response.setHeader("Access-Control-Allow-Headers", "*");
-    }
-    }

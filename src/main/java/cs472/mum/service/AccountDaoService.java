@@ -67,4 +67,8 @@ public class AccountDaoService implements Serializable {
         return accountDao.getAccount(accNo);
     }
 
+    public boolean updateAccount(Account account) {
+        return accountDao.updateAccount(account);
+    }
+
 }
